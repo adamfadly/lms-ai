@@ -7,11 +7,13 @@ import { getSubjectColor } from "@/lib/utils";
 import CompanionComponent from "@/components/CompanionComponent";
 
 interface CompanionSessionPageProps {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }
 
+export const dynamic = "force-dynamic";
+
 const CompanionSession = async ({ params }: CompanionSessionPageProps) => {
-  const { id } = await params;
+  const { id } = params;
   const user = await currentUser();
 
   if (!user) redirect("/sign-in");
