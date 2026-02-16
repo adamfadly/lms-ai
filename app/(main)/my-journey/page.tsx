@@ -9,8 +9,8 @@ const Profile = async () => {
   const user = await currentUser();
   if (!user) redirect("/sign-in");
 
-  const companions = await getUserCompanions(user.id);
-  const sessionHistory = await getUserSessions(user.id);
+  const companions = await getUserCompanions();
+  const sessionHistory = await getUserSessions();
 
   return (
     <main className="min-lg:w-3/4">
