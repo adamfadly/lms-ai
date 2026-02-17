@@ -17,12 +17,17 @@ export const createCompanion = async (formData: CreateCompanion) => {
   return data[0];
 };
 
-export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }: GetAllCompanions) => {
+export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic, publicOnly }: GetAllCompanions) => {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
   const supabase = createSupabaseClient();
 
-  let query = supabase.from("companions").select().eq("author", userId);
+  let query = supabase.from("companions").select();
+  if (publicOnly) {
+    query = query.eq("is_public", true);
+  } else {
+    query = query.eq("author", userId);
+  }
 
   // Normalize parameters to strings and check if they have actual values
   const subjectValue = Array.isArray(subject) ? subject[0] : subject;
@@ -47,12 +52,29 @@ export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }:
   return companions;
 };
 
+export const getPublicCompanions = async (limit = 3) => {
+  const supabase = createSupabaseClient();
+  const { data: companions, error } = await supabase
+    .from("companions")
+    .select()
+    .eq("is_public", true)
+    .range(0, limit - 1);
+
+  if (error) throw new Error(error.message);
+
+  return companions;
+};
+
 export const getCompanion = async (id: string) => {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
   const supabase = createSupabaseClient();
 
-  const { data, error } = await supabase.from("companions").select().eq("id", id).eq("author", userId);
+  const { data, error } = await supabase
+    .from("companions")
+    .select()
+    .eq("id", id)
+    .or(`author.eq.${userId},is_public.eq.true`);
 
   if (error) {
     console.log(error);

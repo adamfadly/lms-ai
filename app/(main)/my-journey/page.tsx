@@ -43,23 +43,19 @@ const Profile = async () => {
           </div>
         </div>
       </section>
-      <Accordion type="multiple">
+      <Accordion type="multiple" defaultValue={["recent"]}>
         <AccordionItem value="recent">
           <AccordionTrigger className="text-2xxl font-bold"> Recent Sessions </AccordionTrigger>
           <AccordionContent>
-            <CompanionsList companions={sessionHistory} title={""} />
+            {sessionHistory.length > 0 ? (
+              <CompanionsList companions={sessionHistory} title={""} />
+            ) : (
+              <div className="py-4 text-sm text-muted-foreground">No session yet.</div>
+            )}
           </AccordionContent>
         </AccordionItem>
       </Accordion>
-      <Accordion type="multiple">
-        <AccordionItem value="recent">
-          <AccordionTrigger className="text-2xxl font-bold"> Companions created {companions.length} </AccordionTrigger>
-          <AccordionContent>
-            <CompanionsList companions={sessionHistory} title={""} />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
-       <Accordion type="multiple">
+      <Accordion type="multiple" defaultValue={["recent"]}>
         <AccordionItem value="recent">
           <AccordionTrigger className="text-2xxl font-bold"> Companions created {companions.length} </AccordionTrigger>
           <AccordionContent>

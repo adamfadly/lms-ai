@@ -9,9 +9,10 @@ interface CompanionCardProps {
   subject: string;
   duration: number;
   color: string;
+  label?: string;
 }
 
-const CompanionCard = ({ id, name, topic, subject, duration, color }: CompanionCardProps) => (
+const CompanionCard = ({ id, name, topic, subject, duration, color, label }: CompanionCardProps) => (
   <article
     className="companion-card group"
     style={{
@@ -20,7 +21,10 @@ const CompanionCard = ({ id, name, topic, subject, duration, color }: CompanionC
     }}
   >
     <div className="flex justify-between items-center">
-      <div className="subject-badge">{subject}</div>
+      <div className="flex items-center gap-2">
+        <div className="subject-badge">{subject}</div>
+        {label ? <div className="subject-badge">{label}</div> : null}
+      </div>
       <button className="companion-bookmark group/bookmark" aria-label="Bookmark companion">
         <Image
           src="/icons/bookmark.svg"

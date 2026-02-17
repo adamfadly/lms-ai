@@ -2,13 +2,13 @@ import React from "react";
 import CompanionCard from "@/components/CompanionCard";
 import CompanionList from "@/components/CompanionList";
 import CTA from "@/components/CTA";
-import { getAllCompanions, getRecentSessions } from "@/lib/actions/companion.actions";
+import { getPublicCompanions, getRecentSessions } from "@/lib/actions/companion.actions";
 import { getSubjectColor } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
 const Page: React.FC = async () => {
-  const companionSessions = await getAllCompanions({ limit: 3 });
+  const companionSessions = await getPublicCompanions(3);
   const recentSessions = await getRecentSessions(10);
   return (
     <main>
@@ -22,6 +22,7 @@ const Page: React.FC = async () => {
       </section>
 
       {/* Popular Companions Grid */}
+
       <section className="home-section mb-12">
         {companionSessions && companionSessions.length > 0 ? (
           companionSessions.map((companion) => (
