@@ -40,6 +40,7 @@ interface GetAllCompanions {
   page?: number;
   subject?: string | string[];
   topic?: string | string[];
+  publicOnly?: boolean;
 }
 
 interface BuildClient {

@@ -4,6 +4,7 @@ import { createSupabaseClient } from "@/lib/supabase";
 
 export const createCompanion = async (formData: CreateCompanion) => {
   const { userId: author } = await auth();
+  if (!author) throw new Error("Unauthorized");
   const supabase = createSupabaseClient();
 
   const { data, error } = await supabase
@@ -16,10 +17,17 @@ export const createCompanion = async (formData: CreateCompanion) => {
   return data[0];
 };
 
-export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }: GetAllCompanions) => {
+export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic, publicOnly }: GetAllCompanions) => {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
   const supabase = createSupabaseClient();
 
   let query = supabase.from("companions").select();
+  if (publicOnly) {
+    query = query.eq("is_public", true);
+  } else {
+    query = query.eq("author", userId);
+  }
 
   // Normalize parameters to strings and check if they have actual values
   const subjectValue = Array.isArray(subject) ? subject[0] : subject;
@@ -44,10 +52,29 @@ export const getAllCompanions = async ({ limit = 10, page = 1, subject, topic }:
   return companions;
 };
 
+export const getPublicCompanions = async (limit = 3) => {
+  const supabase = createSupabaseClient();
+  const { data: companions, error } = await supabase
+    .from("companions")
+    .select()
+    .eq("is_public", true)
+    .range(0, limit - 1);
+
+  if (error) throw new Error(error.message);
+
+  return companions;
+};
+
 export const getCompanion = async (id: string) => {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
   const supabase = createSupabaseClient();
 
-  const { data, error } = await supabase.from("companions").select().eq("id", id);
+  const { data, error } = await supabase
+    .from("companions")
+    .select()
+    .eq("id", id)
+    .or(`author.eq.${userId},is_public.eq.true`);
 
   if (error) {
     console.log(error);
@@ -63,6 +90,7 @@ export const getCompanion = async (id: string) => {
 
 export const addToSessionHistory = async (companionId: string) => {
   const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
   const supabase = createSupabaseClient();
   const { data, error } = await supabase.from("session_history").insert({
     companion_id: companionId,
@@ -74,6 +102,8 @@ export const addToSessionHistory = async (companionId: string) => {
 };
 
 export const getRecentSessions = async (limit = 10) => {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
   const supabase = createSupabaseClient();
 
   // Get unique companions from recent sessions using DISTINCT
@@ -83,36 +113,7 @@ export const getRecentSessions = async (limit = 10) => {
       `
       companion_id,
       companions!inner(*)
-    `
-    )
-    .order("created_at", { ascending: false });
-
-  if (error) throw new Error(error.message);
-
-  // Extract unique companions
-  const seenIds = new Set();
-  const uniqueCompanions = [];
-
-  for (const session of data) {
-    if (session.companions && !seenIds.has(session.companion_id)) {
-      seenIds.add(session.companion_id);
-      uniqueCompanions.push(session.companions);
-      if (uniqueCompanions.length >= limit) break;
-    }
-  }
-
-  return uniqueCompanions;
-};
-
-export const getUserSessions = async (userId: string, limit = 10) => {
-  const supabase = createSupabaseClient();
-  const { data, error } = await supabase
-    .from("session_history")
-    .select(
-      `
-      companion_id,
-      companions!inner(*)
-    `
+    `,
     )
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
@@ -134,7 +135,41 @@ export const getUserSessions = async (userId: string, limit = 10) => {
   return uniqueCompanions;
 };
 
-export const getUserCompanions = async (userId: string) => {
+export const getUserSessions = async (limit = 10) => {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
+  const supabase = createSupabaseClient();
+  const { data, error } = await supabase
+    .from("session_history")
+    .select(
+      `
+      companion_id,
+      companions!inner(*)
+    `,
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  // Extract unique companions
+  const seenIds = new Set();
+  const uniqueCompanions = [];
+
+  for (const session of data) {
+    if (session.companions && !seenIds.has(session.companion_id)) {
+      seenIds.add(session.companion_id);
+      uniqueCompanions.push(session.companions);
+      if (uniqueCompanions.length >= limit) break;
+    }
+  }
+
+  return uniqueCompanions;
+};
+
+export const getUserCompanions = async () => {
+  const { userId } = await auth();
+  if (!userId) throw new Error("Unauthorized");
   const supabase = createSupabaseClient();
   const { data, error } = await supabase.from("companions").select().eq("author", userId);
 
