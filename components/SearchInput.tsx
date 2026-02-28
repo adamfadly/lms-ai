@@ -35,11 +35,11 @@ const SearchInput = () => {
   }, [searchQuery, router, searchParams, pathname]);
 
   return (
-    <div className="relative border border-black rounded-lg items-center flex gap-2 px-2 py-1 h-fit">
-      <Image src="/icons/search.svg" alt="search" width={15} height={15} />
+    <div className="relative border border-border rounded-lg items-center flex gap-2 px-3 py-2 h-fit bg-secondary/40 focus-within:ring-2 focus-within:ring-accent focus-within:border-accent transition-all duration-200">
+      <Image src="/icons/search.svg" alt="search" width={15} height={15} className="opacity-50 dark:invert" />
       <input
         placeholder="Search companions..."
-        className="outline-none"
+        className="outline-none bg-transparent text-foreground placeholder:text-muted-foreground w-full text-sm"
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
