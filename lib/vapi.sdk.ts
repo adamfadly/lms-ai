@@ -8,6 +8,6 @@ export const vapi = new Proxy({} as Vapi, {
       vapiInstance = new Vapi(process.env.NEXT_PUBLIC_VAPI_WEB_TOKEN!);
     }
     if (!vapiInstance) throw new Error("Vapi can only be used in the browser");
-    return (vapiInstance as Record<string, unknown>)[prop as string];
+    return (vapiInstance as unknown as Record<string, unknown>)[prop as string];
   },
 });
